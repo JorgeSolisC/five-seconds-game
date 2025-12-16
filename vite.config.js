@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
@@ -10,9 +11,22 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  base: process.env.NODE_ENV === 'production' ? '/five-seconds-game/' : '/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'localforage']
+        }
+      }
+    }
+  }
 })
