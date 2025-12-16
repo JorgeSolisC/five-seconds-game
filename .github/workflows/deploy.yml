@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -11,92 +11,86 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: production
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Configure environment variables
-      run: |
-        # Crear archivo .env.production con todas las APIs
-        cat > .env.production << EOF
-        # AI APIs Configuration
-        VITE_HUGGINGFACE_API_KEY=${{ secrets.VITE_HUGGINGFACE_API_KEY }}
-        VITE_COHERE_API_KEY=${{ secrets.VITE_COHERE_API_KEY }}
-        VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}
-        VITE_PERPLEXITY_API_KEY=${{ secrets.VITE_PERPLEXITY_API_KEY }}
-        
-        # App Configuration
-        VITE_APP_NAME=Five Seconds Game
-        VITE_APP_VERSION=${{ github.sha }}
-        VITE_BUILD_DATE=$(date -Iseconds)
-        VITE_APP_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-        
-        # Feature Flags
-        VITE_ENABLE_AI=true
-        VITE_ENABLE_OFFLINE=true
-        VITE_ENABLE_ANALYTICS=false
-        EOF
-        
-        # Mostrar resumen (sin exponer claves)
-        echo "✅ Environment configured"
-        echo "📊 API Keys Status:"
-        echo "• HuggingFace: ${#VITE_HUGGINGFACE_API_KEY} chars"
-        echo "• Cohere: ${#VITE_COHERE_API_KEY} chars"
-        echo "• OpenRouter: ${#VITE_OPENROUTER_API_KEY} chars"
-        echo "• Perplexity: ${#VITE_PERPLEXITY_API_KEY} chars"
-    
-    - name: Build application
-      run: npm run build
-      env:
-        # Pasar todas las variables al proceso de build
-        VITE_HUGGINGFACE_API_KEY: ${{ secrets.VITE_HUGGINGFACE_API_KEY }}
-        VITE_COHERE_API_KEY: ${{ secrets.VITE_COHERE_API_KEY }}
-        VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
-        VITE_PERPLEXITY_API_KEY: ${{ secrets.VITE_PERPLEXITY_API_KEY }}
-        VITE_APP_VERSION: ${{ github.sha }}
-        VITE_BUILD_DATE: $(date -Iseconds)
-    
-    - name: Test build
-      run: |
-        echo "🧪 Testing build..."
-        
-        # Verificar que los archivos principales existan
-        if [ ! -f "dist/index.html" ]; then
-          echo "❌ index.html not found!"
-          exit 1
-        fi
-        
-        echo "📦 Build size:"
-        du -sh dist/
-        echo "✅ Build test passed"
-    
-    - name: Setup Pages
-      uses: actions/configure-pages@v3
-    
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v2
-      with:
-        path: './dist'
-    
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure environment variables
+        run: |
+          # Obtener nombre del repositorio para la base URL
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+
+          # Crear archivo .env.production
+          cat > .env.production << EOF
+          # AI APIs Configuration
+          VITE_HUGGINGFACE_API_KEY=${{ secrets.VITE_HUGGINGFACE_API_KEY }}
+          VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}
+
+          # App Configuration
+          VITE_APP_NAME=Five Seconds Game
+          VITE_APP_VERSION=${{ github.sha }}
+          VITE_BUILD_DATE=$(date -Iseconds)
+          VITE_APP_URL=https://${{ github.repository_owner }}.github.io/${REPO_NAME}/
+          VITE_BASE_URL=/${REPO_NAME}/  # ⭐ Para Vue Router
+
+          # Feature Flags
+          VITE_ENABLE_AI=true
+          VITE_ENABLE_OFFLINE=true
+          VITE_ENABLE_ANALYTICS=false
+          EOF
+
+          echo "✅ Environment configured for repo: ${REPO_NAME}"
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_HUGGINGFACE_API_KEY: ${{ secrets.VITE_HUGGINGFACE_API_KEY }}
+          VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_BUILD_DATE: $(date -Iseconds)
+
+      - name: Test build
+        run: |
+          echo "🧪 Testing build..."
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ index.html not found!"
+            exit 1
+          fi
+
+          # Verificar tamaño del bundle
+          echo "📦 Build size:"
+          find dist/ -type f -name "*.js" -exec du -h {} \; | sort -hr | head -10
+
+          echo "✅ Build test passed"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
