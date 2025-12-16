@@ -34,6 +34,31 @@ git clone https://github.com/yourusername/five-seconds-game.git
 cd five-seconds-game
 ```
 
+## 🤖 AI Question Generation
+
+The game can generate unique questions using free AI APIs:
+
+### Available Free APIs:
+1. **Hugging Face** - Completely free
+   - Get API key: https://huggingface.co/settings/tokens
+   - No credit card required
+
+2. **Cohere** - 100 free credits
+   - Sign up: https://dashboard.cohere.com
+   - Get 100 free credits to start
+
+3. **OpenRouter** - Free models available
+   - Sign up: https://openrouter.ai
+   - Several free models available
+
+### How to Setup:
+1. Create a `.env` file in the project root
+2. Add your API keys:
+```env
+VITE_HUGGINGFACE_API_KEY=your_key_here
+VITE_COHERE_API_KEY=your_key_here
+VITE_OPENROUTER_API_KEY=your_key_here
+
 ![Vue.js](https://img.shields.io/badge/vuejs-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)

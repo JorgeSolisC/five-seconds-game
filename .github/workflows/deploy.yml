@@ -2,31 +2,101 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
     
-    - name: Install Dependencies
+    - name: Install dependencies
       run: npm ci
     
-    - name: Build
+    - name: Configure environment variables
+      run: |
+        # Crear archivo .env.production con todas las APIs
+        cat > .env.production << EOF
+        # AI APIs Configuration
+        VITE_HUGGINGFACE_API_KEY=${{ secrets.VITE_HUGGINGFACE_API_KEY }}
+        VITE_COHERE_API_KEY=${{ secrets.VITE_COHERE_API_KEY }}
+        VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}
+        VITE_PERPLEXITY_API_KEY=${{ secrets.VITE_PERPLEXITY_API_KEY }}
+        
+        # App Configuration
+        VITE_APP_NAME=Five Seconds Game
+        VITE_APP_VERSION=${{ github.sha }}
+        VITE_BUILD_DATE=$(date -Iseconds)
+        VITE_APP_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        
+        # Feature Flags
+        VITE_ENABLE_AI=true
+        VITE_ENABLE_OFFLINE=true
+        VITE_ENABLE_ANALYTICS=false
+        EOF
+        
+        # Mostrar resumen (sin exponer claves)
+        echo "✅ Environment configured"
+        echo "📊 API Keys Status:"
+        echo "• HuggingFace: ${#VITE_HUGGINGFACE_API_KEY} chars"
+        echo "• Cohere: ${#VITE_COHERE_API_KEY} chars"
+        echo "• OpenRouter: ${#VITE_OPENROUTER_API_KEY} chars"
+        echo "• Perplexity: ${#VITE_PERPLEXITY_API_KEY} chars"
+    
+    - name: Build application
       run: npm run build
+      env:
+        # Pasar todas las variables al proceso de build
+        VITE_HUGGINGFACE_API_KEY: ${{ secrets.VITE_HUGGINGFACE_API_KEY }}
+        VITE_COHERE_API_KEY: ${{ secrets.VITE_COHERE_API_KEY }}
+        VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+        VITE_PERPLEXITY_API_KEY: ${{ secrets.VITE_PERPLEXITY_API_KEY }}
+        VITE_APP_VERSION: ${{ github.sha }}
+        VITE_BUILD_DATE: $(date -Iseconds)
+    
+    - name: Test build
+      run: |
+        echo "🧪 Testing build..."
+        
+        # Verificar que los archivos principales existan
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ index.html not found!"
+          exit 1
+        fi
+        
+        echo "📦 Build size:"
+        du -sh dist/
+        echo "✅ Build test passed"
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: './dist'
     
     - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        folder: dist
-        branch: gh-pages
+      id: deployment
+      uses: actions/deploy-pages@v2

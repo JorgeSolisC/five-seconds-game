@@ -20,10 +20,10 @@
             {{ language === 'es' ? 'Tiempo restante:' : 'Time remaining:' }}
           </div>
           <div class="relative">
-            <div class="text-6xl font-bold" :class="timerColor">
-              {{ timer }}
+            <div class="text-6xl font-bold pb-4" :class="timerColor">
+              {{ internalTimer }}
             </div>
-            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
+            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-sm text-gray-500 mt-4">
               {{ language === 'es' ? 'segundos' : 'seconds' }}
             </div>
           </div>
@@ -50,7 +50,7 @@
     <!-- Controles del juego -->
     <div class="flex flex-col sm:flex-row gap-4 mb-8">
       <button
-        @click="handleCorrectAnswer"
+        @click="handleAnswer(true)" type="button"
         class="flex-1 py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-lg transition duration-200 shadow-lg"
       >
         <div class="flex items-center justify-center">
@@ -62,7 +62,7 @@
       </button>
       
       <button
-        @click="handleIncorrectAnswer"
+        @click="handleAnswer(false)" type="button"
         class="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-lg transition duration-200 shadow-lg"
       >
         <div class="flex items-center justify-center">
@@ -114,13 +114,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { getCategoryName } from '../utils/questionGenerator'
 
 const props = defineProps({
   currentQuestion: String,
   currentTeam: Object,
-  timer: Number,
   language: String,
   categories: Array,
   currentCategory: String
@@ -129,7 +128,7 @@ const props = defineProps({
 const emit = defineEmits(['next-question', 'timer-end', 'update-score'])
 
 // Temporizador interno
-const internalTimer = ref(props.timer)
+const internalTimer = ref(5)
 let timerInterval = null
 
 // Color del temporizador basado en el tiempo restante
@@ -154,23 +153,18 @@ const startTimer = () => {
   }, 1000)
 }
 
-// Respuesta correcta
-const handleCorrectAnswer = () => {
-  emit('update-score', true)
-  clearInterval(timerInterval)
-}
-
-// Respuesta incorrecta o sin respuesta
-const handleIncorrectAnswer = () => {
-  emit('update-score', false)
-  clearInterval(timerInterval)
+// Respuesta
+const handleAnswer = (update = false) => {
+  emit('update-score', update);
+  clearInterval(timerInterval);
+  startTimer();
 }
 
 // Siguiente pregunta
 const nextQuestion = () => {
-  clearInterval(timerInterval)
-  emit('next-question')
-  startTimer()
+  clearInterval(timerInterval);
+  emit('next-question');
+  startTimer();
 }
 
 // Seleccionar categoría
@@ -187,9 +181,9 @@ const selectCategory = (categoryId) => {
 // }
 
 // Observar cambios en el temporizador externo
-// watch(() => props.timer, (newTimer) => {
-//   internalTimer.value = newTimer
-// })
+watch(() => props.timer, (newTimer) => {
+   internalTimer.value = newTimer
+})
 
 // Iniciar temporizador al montar
 onMounted(() => {

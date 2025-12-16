@@ -16,6 +16,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "localforage": "^1.10.0",
     "vue": "^3.5.25",
     "vue-router": "^4.6.3"
