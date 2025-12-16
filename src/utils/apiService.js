@@ -5,6 +5,7 @@ import {
   OPENROUTER_CONFIG,
   HUGGINGFACE_CONFIG,
   OPENROUTER_MODELS,
+  HUGGINGFACE_MODELS,
   generatePrompt,
   getRandomQuestion
 } from './apiConfig.js';
@@ -472,119 +473,156 @@ export async function checkAIServices() {
 
   const results = {
     OpenRouter: { available: false, reason: 'Not tested', currentModel: null, workingModels: [] },
-    HuggingFace: { available: false, reason: 'Not tested' },
+    HuggingFace: { available: false, reason: 'Not tested', workingModel: null },
     LocalQuestions: { available: true, reason: 'Always available' }
   };
 
-  // Probar OpenRouter
-  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  if (openRouterKey && openRouterKey.length >= 10) {
-    const workingModels = [];
+  // 1. PRIMERO: Probar OpenRouter
+  await testOpenRouter(results);
 
-    // ⭐⭐ CORRECCIÓN: DETENERSE CUANDO ENCUENTRA UN MODELO FUNCIONAL ⭐⭐
-    for (let i = 0; i < OPENROUTER_MODELS.length; i++) {
-      try {
-        const model = OPENROUTER_MODELS[i];
-        console.log(`  Testing OpenRouter model: ${model}`);
-
-        const testResult = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openRouterKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [{ role: 'user', content: 'Say "test"' }],
-            max_tokens: 5
-          }),
-          signal: AbortSignal.timeout(3000) // Reducido a 3 segundos
-        });
-
-        if (testResult.ok) {
-          console.log(`✅ Model ${model} is working`);
-          workingModels.push(model);
-
-          // ⭐⭐ DETENERSE después de encontrar el PRIMER modelo funcional ⭐⭐
-          if (workingModels.length === 1) {
-            console.log(`🎯 Found working model: ${model}. Stopping further tests.`);
-            currentWorkingModelIndex = i;
-            modelTested = true;
-
-            // ⭐⭐ NO probar más modelos - salir del bucle ⭐⭐
-            break;
-          }
-        } else {
-          console.log(`❌ Model ${model} failed (HTTP ${testResult.status})`);
-        }
-      } catch (error) {
-        console.log(`❌ Model test error: ${error.message}`);
-        // Continuar con el siguiente modelo, no detenerse por errores de red
-      }
-
-      // ⭐⭐ Pequeña pausa entre tests para evitar rate limiting ⭐⭐
-      if (i < OPENROUTER_MODELS.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    }
-
-    results.OpenRouter = {
-      available: workingModels.length > 0,
-      reason: workingModels.length > 0 ?
-        `Found ${workingModels.length} working model(s)` :
-        'No models responded',
-      currentModel: workingModels.length > 0 ? getCurrentOpenRouterModel() : null,
-      workingModels: workingModels,
-      totalModels: OPENROUTER_MODELS.length,
-      // ⭐⭐ NUEVO: Informar que se detuvo después de encontrar uno funcional ⭐⭐
-      optimization: workingModels.length > 0 ?
-        'Stopped after first working model found' :
-        'Tested all models'
-    };
+  // 2. SEGUNDO: Solo probar HuggingFace si OpenRouter no funcionó
+  if (!results.OpenRouter.available) {
+    await testHuggingFace(results);
   } else {
-    results.OpenRouter.reason = 'No API key configured';
+    console.log('⏩ Skipping HuggingFace test (OpenRouter is working)');
+    results.HuggingFace.reason = 'Skipped (OpenRouter is available)';
   }
 
-  // Probar HuggingFace (mantener como está)
-  const huggingFaceKey = import.meta.env.VITE_HUGGINGFACE_API_KEY;
-  if (huggingFaceKey && huggingFaceKey.length >= 10) {
+  console.log('📊 Services status:', results);
+  return results;
+}
+
+async function testOpenRouter(results) {
+  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  if (!openRouterKey || openRouterKey.length < 10) {
+    results.OpenRouter.reason = 'No API key configured';
+    return;
+  }
+
+  const workingModels = [];
+  let currentWorkingModel = null;
+
+  console.log('  Testing OpenRouter...');
+
+  for (let i = 0; i < OPENROUTER_MODELS.length; i++) {
     try {
-      console.log('  Testing HuggingFace...');
-      const testResult = await fetch('https://api-inference.huggingface.co/models/google/flan-t5-base', {
+      const model = OPENROUTER_MODELS[i];
+      console.log(`    Testing model: ${model}`);
+
+      const testResult = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: 'Say only "test"' }],
+          max_tokens: 5
+        }),
+        signal: AbortSignal.timeout(3000)
+      });
+
+      if (testResult.ok) {
+        console.log(`    ✅ Model ${model} is working`);
+        workingModels.push(model);
+
+        // Usar el primer modelo funcional como current
+        if (!currentWorkingModel) {
+          currentWorkingModel = model;
+          results.OpenRouter.currentModel = model;
+
+          // Opcional: Detener después del primer modelo exitoso
+          if (workingModels.length === 1) {
+            console.log(`    🎯 Found working model. Stopping OpenRouter tests.`);
+            break;
+          }
+        }
+      } else {
+        console.log(`    ❌ Model ${model} failed (HTTP ${testResult.status})`);
+      }
+    } catch (error) {
+      console.log(`    ❌ Model test error: ${error.message}`);
+    }
+
+    // Pequeña pausa entre tests
+    if (i < OPENROUTER_MODELS.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+
+  results.OpenRouter = {
+    available: workingModels.length > 0,
+    reason: workingModels.length > 0
+      ? `Found ${workingModels.length} working model(s)`
+      : 'No models responded',
+    currentModel: currentWorkingModel,
+    workingModels: workingModels,
+    totalModels: OPENROUTER_MODELS.length,
+    optimization: workingModels.length > 0
+      ? 'Stopped after first working model found'
+      : 'Tested all models'
+  };
+}
+
+async function testHuggingFace(results) {
+  const huggingFaceKey = import.meta.env.VITE_HUGGINGFACE_API_KEY;
+  if (!huggingFaceKey || huggingFaceKey.length < 10) {
+    results.HuggingFace.reason = 'No API key configured';
+    return;
+  }
+
+  console.log('  Testing HuggingFace (fallback)...');
+  let workingModel = null;
+
+  // Probar múltiples modelos de HuggingFace
+  for (let i = 0; i < HUGGINGFACE_MODELS.length; i++) {
+    const model = HUGGINGFACE_MODELS[i];
+
+    try {
+      console.log(`    Testing HuggingFace model: ${model}`);
+
+      const testResult = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${huggingFaceKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: 'Say "test"'
+          inputs: 'Say test'
         }),
-        signal: AbortSignal.timeout(5000) // Reducido a 5 segundos
+        signal: AbortSignal.timeout(4000)
       });
 
-      results.HuggingFace = {
-        available: testResult.ok,
-        reason: testResult.ok ? 'API working' : `HTTP ${testResult.status}`
-      };
-
       if (testResult.ok) {
-        console.log('✅ HuggingFace is working');
+        console.log(`    ✅ HuggingFace model ${model} is working`);
+        workingModel = model;
+        break; // Detener al primer modelo funcional
       } else {
-        console.log(`❌ HuggingFace failed (HTTP ${testResult.status})`);
+        console.log(`    ❌ HuggingFace model ${model} failed (HTTP ${testResult.status})`);
+
+        // Si es error 503 (model loading), continuar con siguiente modelo
+        if (testResult.status === 503) {
+          console.log(`    ⚠️ Model ${model} is loading. Trying next model...`);
+          continue;
+        }
       }
     } catch (error) {
-      results.HuggingFace = {
-        available: false,
-        reason: error.message
-      };
-      console.log(`❌ HuggingFace error: ${error.message}`);
+      console.log(`    ❌ HuggingFace model ${model} error: ${error.message}`);
     }
-  } else {
-    results.HuggingFace.reason = 'No API key configured';
+
+    // Pausa entre intentos
+    if (i < HUGGINGFACE_MODELS.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
 
-  console.log('📊 Services status:', results);
-  return results;
+  results.HuggingFace = {
+    available: workingModel !== null,
+    reason: workingModel ? `Model ${workingModel} is working` : 'No models responded',
+    workingModel: workingModel,
+    modelsTested: HUGGINGFACE_MODELS.length
+  };
 }
 
 export function getAPIStats() {

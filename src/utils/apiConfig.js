@@ -99,3 +99,15 @@ export const OPENROUTER_MODELS = [
   'tngtech/deepseek-r1t2-chimera:free',
   'mistralai/devstral-2512:free',
 ];
+
+export const HUGGINGFACE_MODELS = [
+  'google/flan-t5-base',
+  'microsoft/DialoGPT-small',
+  'facebook/blenderbot-400M-distill',
+  'gpt2',
+  'distilgpt2',
+  'tngtech/deepseek-r1t2-chimera:free',
+  'mistralai/devstral-2512:free',
+  'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16',
+  'DavidAU/Qwen3-24B-A4B-Freedom-Thinking-Abliterated-Heretic-NEO-Imatrix-GGUF',
+];
