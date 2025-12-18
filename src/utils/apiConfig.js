@@ -17,11 +17,15 @@ export const OPENROUTER_CONFIG = {
   getBody: (prompt, model = 'google/gemma-3n-e2b-it:free') => ({
     model: model, // Usar el modelo pasado como parámetro
     messages: [{
+      role: 'system',
+      content: 'Eres el mazo de cartas del juego "5 Segundos para Ganar". Tu única función es dar el texto de la carta. NUNCA saludes, NUNCA des instrucciones. Solo entrega la pregunta directa.'
+    }, {
       role: 'user',
       content: prompt
     }],
-    max_tokens: 60,
-    temperature: 0.8
+    max_tokens: 35,
+    temperature: 0.9,
+    top_p: 1
   }),
 
   extractResponse: (data) => {
@@ -80,22 +84,31 @@ export function generatePrompt(category, language = 'es') {
 
 // ⭐⭐ NUEVO: Lista de modelos OpenRouter (para usar en apiService) ⭐⭐
 export const OPENROUTER_MODELS = [
-  'google/gemma-3n-e2b-it:free',      // Modelo principal (gratuito)
+  // --- CATEGORÍA: TOP INTELLIGENCE (Los mejores para el humor del juego) ---
   'google/gemma-3-27b-it:free',
-  'google/gemma-3-12b-it:free',
-  'google/gemma-3-4b-it:free',
   'google/gemini-2.0-flash-exp:free',
-  'google/gemini-2.5-flash-lite',
-  'openai/o4-mini-deep-research',
-  'arcee-ai/trinity-mini:free',
-  'nex-agi/deepseek-v3.1-nex-n1:free',
-  'openai/gpt-oss-120b:free',
-  'openai/gpt-oss-20b:free',
-  'nousresearch/hermes-3-llama-3.1-405b:free',
+  'google/gemini-2.0-flash-thinking-exp:free',
   'meta-llama/llama-3.3-70b-instruct:free',
+  'nvidia/llama-3.1-nemotron-70b-instruct:free',
+
+  // --- CATEGORÍA: BALANCED & CREATIVE (Rápidos y con buen tono) ---
+  'google/gemma-3-12b-it:free',
+  'google/learnlm-1.5-pro-experimental:free',
+  'meta-llama/llama-3.2-11b-vision-instruct:free',
+  'qwen/qwen-2.5-72b-instruct:free',
+  'mistralai/pixtral-12b:free',
+  'sophosympathizer/lfm-40b:free',
+
+  // --- CATEGORÍA: ULTRA FAST (Casi instantáneos, ideales como fallback) ---
+  'google/gemma-3-4b-it:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'qwen/qwen-2.5-7b-instruct:free',
   'microsoft/phi-3-medium-128k-instruct:free',
-  'qwen/qwen-2.5-32b-instruct:free',
-  'kwaipilot/kat-coder-pro:free',
-  'tngtech/deepseek-r1t2-chimera:free',
-  'mistralai/devstral-2512:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+
+  // --- CATEGORÍA: COMMUNITY STABLE (Muy confiables en disponibilidad) ---
+  'arcee-ai/trinity-mini:free',
+  'mistralai/mistral-7b-instruct:free',
+  'microsoft/phi-3-mini-128k-instruct:free',
+  'openchat/openchat-7b:free'
 ];

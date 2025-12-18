@@ -435,6 +435,7 @@
 
         <!-- Botón para iniciar -->
         <button
+          type="button"
           @click="startGame"
           :disabled="!canStart"
           :class="[

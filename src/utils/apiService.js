@@ -171,34 +171,29 @@ function cleanQuestionText(text, language = 'es') {
 
   let cleaned = text
     .replace(/^["'¿¡\s]+|["'\.\?!\s]+$/g, '')
-    .replace(/^(Pregunta:|Question:|Respuesta:|Answer:|AI:|Bot:|Assistant:|Model:|Here's|Aquí):?\s*/i, '')
-    .replace(/^\d+[\.\)]\s*/g, '')
-    .replace(/\*\*/g, '')
-    .replace(/`/g, '')
+    // Eliminar frases introductorias comunes de la IA
+    .replace(/^(Aquí tienes|Seguro|Claro|Mi propuesta es|La pregunta es|Nombra 3 cosas como):?\s*/i, '')
     .trim();
 
-  if (language === 'es') {
-    if (!cleaned.toLowerCase().startsWith('nombra 3')) {
-      cleaned = 'Nombra 3 ' + cleaned;
-    }
-  } else {
-    if (!cleaned.toLowerCase().startsWith('name 3')) {
-      cleaned = 'Name 3 ' + cleaned;
-    }
+  // Forzar el formato del juego original
+  const prefix = language === 'es' ? 'Nombra 3 ' : 'Name 3 ';
+
+  if (!cleaned.toLowerCase().startsWith(prefix.toLowerCase())) {
+    cleaned = prefix + cleaned;
   }
 
-  if (cleaned.length > 0) {
-    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-    if (!cleaned.endsWith('?')) {
-      cleaned = cleaned + '?';
-    }
+  // Si la pregunta es muy larga (ej. el ejemplo de la pasta),
+  // intentamos simplificarla eliminando adjetivos innecesarios al final
+  if (cleaned.length > 60) {
+    cleaned = cleaned.split(',')[0].split(' que ')[0].split(' para ')[0];
+    // Esto corta frases como "...que deje con la boca abierta"
   }
 
-  if (cleaned.length > 120) {
-    cleaned = cleaned.substring(0, 117) + '...';
-  }
+  // Capitalización y cierre
+  cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  if (!cleaned.endsWith('?')) cleaned += '?';
 
-  return cleaned || getRandomQuestion(language, 'random');
+  return cleaned;
 }
 
 // ===== OPENROUTER API CALL =====

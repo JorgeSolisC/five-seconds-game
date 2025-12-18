@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-6">
       {{ language === 'es' ? 'Marcador' : 'Scoreboard' }}
     </h2>
-    
+
     <div class="space-y-4">
       <div
         v-for="(team, index) in teams"
@@ -15,7 +15,7 @@
             : 'border-gray-200 hover:border-gray-300'
         ]"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col">
           <div class="flex items-center">
             <div :class="['w-4 h-4 rounded-full mr-3', team.color]"></div>
             <div>
@@ -25,8 +25,7 @@
               </div>
             </div>
           </div>
-          
-          <div class="flex items-center">
+          <div class="flex items-center justify-between">
             <div class="text-3xl font-bold text-gray-800 mr-4">{{ team.score }}</div>
             <div class="flex space-x-2">
               <button
@@ -51,12 +50,12 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Barra de progreso -->
         <div class="mt-4">
           <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              :class="['h-full transition-all duration-500', team.color.replace('bg-', 'bg-')]" 
+            <div
+              :class="['h-full transition-all duration-500', team.color.replace('bg-', 'bg-')]"
               :style="{ width: calculateScorePercentage(team.score) + '%' }"
             ></div>
           </div>
@@ -73,7 +72,7 @@
           </h4>
           <div class="text-2xl font-bold text-gray-800">{{ totalScore }}</div>
         </div>
-        
+
         <div v-if="winningTeam" class="text-right">
           <div class="text-sm text-gray-600">
             {{ language === 'es' ? 'Equipo líder:' : 'Leading team:' }}
@@ -134,17 +133,17 @@ const totalScore = computed(() => {
 // Equipo ganador
 const winningTeam = computed(() => {
   if (props.teams.length === 0) return null
-  
+
   let maxScore = -1
   let winningTeam = null
-  
+
   props.teams.forEach(team => {
     if (team.score > maxScore) {
       maxScore = team.score
       winningTeam = team
     }
   })
-  
+
   return winningTeam
 })
 

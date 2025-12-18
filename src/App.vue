@@ -83,12 +83,12 @@
       </div>
 
       <!-- Botón de reinicio (solo durante el juego) -->
-      <div v-if="gamePhase === 'playing'" class="mt-8 text-center">
-        <button @click="confirmReset"
-          class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-md transition duration-200">
+      <div v-if="gamePhase === 'playing'" class="mt-8 text-center flex gap-4">
+        <button @click="confirmReset" type="button"
+          class="flex-1 py-4 bg-gradient-to-r from-red-500 to-red-950 hover:from-red-600 hover:to-red-600 text-white font-bold rounded-xl text-lg transition duration-300 shadow-lg">
           {{ language === 'es' ? 'Reiniciar Juego' : 'Reset Game' }}
         </button>
-        <button @click="newGame"
+        <button @click="newGame" type="button"
           class="flex-1 py-4 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold rounded-xl text-lg transition duration-300 shadow-lg">
           <div class="flex items-center justify-center">
             <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,8 +367,6 @@ const loadCurrentQuestion = () => {
     currentQuestion.value = questionData.text
     currentCategory.value = questionData.category
     timer.value = 5
-
-    console.log(`Loading question ${currentQuestionIndex.value + 1} of round ${currentRound.value}: ${currentQuestion.value.substring(0, 50)}...`)
   } else {
     // Fallback si no hay pregunta
     currentQuestion.value = language.value === 'es'

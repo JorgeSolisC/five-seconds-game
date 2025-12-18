@@ -1,20 +1,20 @@
 export const CATEGORY_PROMPTS = {
   es: {
-    funny: 'Crea una pregunta divertida para el juego "5 Segundos" que empiece con "Nombra 3...". Máximo 12 palabras. Sé creativo y original.',
-    'pop-culture': 'Crea una pregunta sobre cultura pop para "5 Segundos" que empiece con "Nombra 3...". Incluye películas, música, series o celebridades.',
-    personal: 'Crea una pregunta personal para "5 Segundos" que empiece con "Nombra 3...". Sobre gustos, experiencias o preferencias.',
-    challenge: 'Crea un desafío mental para "5 Segundos" que empiece con "Nombra 3...". Algo que requiera pensar rápido.',
-    food: 'Crea una pregunta sobre comida para "5 Segundos" que empiece con "Nombra 3...". Puede ser sobre platos, ingredientes o hábitos.',
-    travel: 'Crea una pregunta sobre viajes para "5 Segundos" que empiece con "Nombra 3...". Sobre destinos, experiencias o culturas.',
-    random: 'Crea una pregunta completamente aleatoria para "5 Segundos" que empiece con "Nombra 3...". Sé sorprendente y divertido.'
+    funny: 'Actúa como un diseñador del juego "5 Segundos para Ganar". Genera una pregunta DIVERTIDA y ABSURDA que empiece con "Nombra 3...". Ejemplo: "Nombra 3 cosas que no deberías hacer en un funeral". Sé irreverente y creativo. Máximo 10 palabras.',
+    'pop-culture': 'Genera un reto de cultura pop para "5 Segundos para Ganar" que empiece con "Nombra 3...". Enfócate en cosas famosas pero difíciles de recordar bajo presión (villanos, canciones ridículas, escándalos). Máximo 10 palabras.',
+    personal: 'Genera una pregunta COMPROMETEDORA o sobre hábitos extraños para "5 Segundos" que empiece con "Nombra 3...". Ejemplo: "Nombra 3 cosas que haces cuando nadie te ve". Máximo 10 palabras.',
+    challenge: 'Genera un desafío de rapidez mental para "5 Segundos" que empiece con "Nombra 3...". Ejemplo: "Nombra 3 cosas blancas que tienes en el refrigerador". Debe ser algo fácil pero que el cerebro bloquee. Máximo 10 palabras.',
+    food: 'Genera una pregunta sobre comida para "5 Segundos" que empiece con "Nombra 3...". No pidas solo ingredientes, pide situaciones: "Nombra 3 cosas que saben mejor con catsup" o "Nombra 3 alimentos que huelen mal". Máximo 10 palabras.',
+    travel: 'Genera una pregunta de viajes/lugares para "5 Segundos" que empiece con "Nombra 3...". Ejemplo: "Nombra 3 cosas que siempre olvidas en la maleta". Máximo 10 palabras.',
+    random: 'Genera una pregunta totalmente IMPREDECIBLE para "5 Segundos para Ganar" que empiece con "Nombra 3...". Busca el factor sorpresa. Máximo 10 palabras.'
   },
   en: {
-    funny: 'Create a funny question for the "5 Seconds" game starting with "Name 3...". Max 12 words. Be creative and original.',
-    'pop-culture': 'Create a pop culture question for "5 Seconds" starting with "Name 3...". Include movies, music, series or celebrities.',
-    personal: 'Create a personal question for "5 Seconds" starting with "Name 3...". About likes, experiences or preferences.',
-    challenge: 'Create a mental challenge for "5 Seconds" starting with "Name 3...". Something that requires quick thinking.',
-    food: 'Create a food question for "5 Seconds" starting with "Name 3...". Can be about dishes, ingredients or habits.',
-    travel: 'Create a travel question for "5 Seconds" starting with "Name 3...". About destinations, experiences or cultures.',
-    random: 'Create a completely random question for "5 Seconds" starting with "Name 3...". Be surprising and fun.'
+    funny: 'Act as a "5 Second Rule" game designer. Generate a FUNNY and ABSURD question starting with "Name 3...". Example: "Name 3 things you shouldn\'t do at a wedding". Be creative. Max 10 words.',
+    'pop-culture': 'Generate a pop culture challenge for "5 Second Rule" starting with "Name 3...". Focus on famous but hard-to-recall things under pressure. Max 10 words.',
+    personal: 'Generate an EMBARRASSING or personal question for "5 Second Rule" starting with "Name 3...". Example: "Name 3 things you have lied about". Max 10 words.',
+    challenge: 'Generate a quick-thinking challenge for "5 Second Rule" starting with "Name 3...". Example: "Name 3 sticky things". Max 10 words.',
+    food: 'Generate a food question for "5 Second Rule" starting with "Name 3...". Focus on situations: "Name 3 things that shouldn\'t be on pizza". Max 10 words.',
+    travel: 'Generate a travel question for "5 Second Rule" starting with "Name 3...". Example: "Name 3 things you find in a hotel minibar". Max 10 words.',
+    random: 'Generate a completely UNPREDICTABLE question for "5 Second Rule" starting with "Name 3...". Surprising and fun. Max 10 words.'
   }
 };
